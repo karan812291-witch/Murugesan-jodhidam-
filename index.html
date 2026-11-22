@@ -9372,6 +9372,7 @@
         if (typeof IS_FRIEND_APP_MODE !== "undefined" && !IS_FRIEND_APP_MODE) {
           mjStartMasterOtpListener();
         }
+        mjStartPanchangamCloudSync();
         return true;
       } catch (err) {
         console.warn("Firebase init error:", err);
@@ -9938,6 +9939,111 @@
     window.mjSendCloudOtpRequest = mjSendCloudOtpRequest;
     window.mjApproveCloudOtp = mjApproveCloudOtp;
     window.mjRejectCloudOtp = mjRejectCloudOtp;
+
+
+    // --- 📜 Firebase Cloud Panchangam Sync (Master -> All Friend Apps Live) ---
+    let mjPanchangamUnsub = null;
+
+    function mjStartPanchangamCloudSync() {
+      if (!mjFirebaseReady || !mjDb) return;
+      if (mjPanchangamUnsub) { try { mjPanchangamUnsub(); } catch (e) {} }
+
+      mjPanchangamUnsub = mjDb.collection("panchangam_years").onSnapshot(function(snap) {
+        if (!window._customPaambuYearsStore) window._customPaambuYearsStore = {};
+        let changed = 0;
+        snap.forEach(function(doc) {
+          const d = doc.data();
+          const yKey = String(doc.id || d.year || "").trim();
+          if (!yKey || !d.payloadJson) return;
+          try {
+            const entry = JSON.parse(d.payloadJson);
+            if (entry && entry.meta && entry.pins) {
+              const prevStr = JSON.stringify(window._customPaambuYearsStore[yKey] || null);
+              const nextStr = JSON.stringify(entry);
+              if (prevStr !== nextStr) {
+                window._customPaambuYearsStore[yKey] = entry;
+                changed++;
+              }
+            }
+          } catch (e) {}
+        });
+
+        if (changed > 0) {
+          try {
+            localStorage.setItem("MURUGESAN_CUSTOM_PAAMBU_YEARS_V1", JSON.stringify(window._customPaambuYearsStore));
+          } catch (e) {}
+          const bakedScript = document.getElementById("customBakedPaambuDataScript");
+          if (bakedScript) {
+            bakedScript.textContent = "window.CUSTOM_BAKED_PAAMBU_DATA = " + JSON.stringify(window._customPaambuYearsStore) + ";";
+          }
+          window._paambuSankrantiCache = {};
+          window._paambuYearTableCache = {};
+          if (typeof calculateAndFillBook === "function") calculateAndFillBook();
+          if (typeof window.refreshAddPanchangamTabView === "function") window.refreshAddPanchangamTabView();
+          if (typeof showToast === "function") {
+            showToast("☁️ " + changed + " புதிய பஞ்சாங்க வருடங்கள் Firebase Cloud-லிருந்து தானாகப் புதுப்பிக்கப்பட்டன!", "success");
+          }
+        }
+      }, function(err) {
+        console.warn("Panchangam cloud sync error:", err);
+      });
+    }
+
+    async function mjPushPanchangamYearToCloud(yKey, entry) {
+      if (!mjFirebaseReady || !mjDb || !yKey || !entry) return;
+      try {
+        await mjDb.collection("panchangam_years").doc(String(yKey)).set({
+          year: Number(yKey),
+          tamilYearName: (entry.meta && entry.meta.tamilYearName) ? entry.meta.tamilYearName : "",
+          payloadJson: JSON.stringify(entry),
+          updatedAt: new Date().toISOString(),
+          updatedBy: (typeof IS_FRIEND_APP_MODE !== "undefined" && IS_FRIEND_APP_MODE) ? "FriendApp" : "MasterApp"
+        }, { merge: true });
+        if (typeof showToast === "function") {
+          showToast("☁️ " + yKey + " பஞ்சாங்கம் Firebase Cloud-ல் சேமிக்கப்பட்டது! அனைத்து ஆப்களிலும் தானாக update ஆகும்.", "success");
+        }
+      } catch (err) {
+        console.error("Panchangam cloud push error:", err);
+        if (typeof showToast === "function") {
+          showToast("⚠️ Local-ல் சேமிக்கப்பட்டது (Cloud பஞ்சாங்க பிழை: " + (err.message || "Rules சரிபார்க்கவும்") + ")", "error");
+        }
+      }
+    }
+
+    async function mjDeletePanchangamYearFromCloud(yKey) {
+      if (!mjFirebaseReady || !mjDb || !yKey) return;
+      if (typeof IS_FRIEND_APP_MODE !== "undefined" && IS_FRIEND_APP_MODE) return;
+      try {
+        await mjDb.collection("panchangam_years").doc(String(yKey)).delete();
+      } catch (err) {
+        console.warn("Panchangam cloud delete error:", err);
+      }
+    }
+
+    // Hook Tab 5 Save & Delete so every new Panchangam automatically syncs to Firebase Cloud
+    (function() {
+      const origSavePan = window.saveCurrentYearInAddPanchangamTab;
+      if (typeof origSavePan === "function") {
+        window.saveCurrentYearInAddPanchangamTab = function() {
+          const res = origSavePan.apply(this, arguments);
+          const st = window._addPanchangamState;
+          const yKey = String((st && st.editYear) ? st.editYear : "");
+          if (yKey && window._customPaambuYearsStore && window._customPaambuYearsStore[yKey]) {
+            mjPushPanchangamYearToCloud(yKey, window._customPaambuYearsStore[yKey]);
+          }
+          return res;
+        };
+      }
+
+      const origDelPan = window.deleteCustomYearFromStore;
+      if (typeof origDelPan === "function") {
+        window.deleteCustomYearFromStore = function(yVal) {
+          const res = origDelPan.apply(this, arguments);
+          mjDeletePanchangamYearFromCloud(String(yVal));
+          return res;
+        };
+      }
+    })();
 
     window.addEventListener("DOMContentLoaded", function() {
       mjInitFirebase();
