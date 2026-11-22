@@ -435,12 +435,13 @@
         </div>
 
         <div>
-          <label class="block text-xs font-extrabold text-amber-950 mb-1">வசிக்கும் ஊர் (பக்கம் 8 - ...ல் வசிக்கும்)</label>
-          <input id="inpTown" type="text" value="" placeholder="வசிக்கும் ஊர் உள்ளிடவும்" oninput="calculateAndFillBook()" class="w-full px-3 py-2 rounded-xl border border-amber-300 text-sm font-bold text-slate-900" />
+          <label class="block text-xs font-extrabold text-amber-950 mb-1">மாவட்டம் (பக்கம் 8 - ...மாவட்டம்)</label>
+          <select id="inpDistrict" onchange="mjOnDistrictChanged('client')" class="w-full px-3 py-2 rounded-xl border border-amber-300 text-sm font-bold text-slate-900 bg-white"></select>
         </div>
         <div>
-          <label class="block text-xs font-extrabold text-amber-950 mb-1">மாவட்டம் (பக்கம் 8 - ...மாவட்டம்)</label>
-          <input id="inpDistrict" type="text" value="" placeholder="மாவட்டம் உள்ளிடவும்" oninput="calculateAndFillBook()" class="w-full px-3 py-2 rounded-xl border border-amber-300 text-sm font-bold text-slate-900" />
+          <label class="block text-xs font-extrabold text-amber-950 mb-1">வசிக்கும் ஊர் (பக்கம் 8 - ...ல் வசிக்கும்)</label>
+          <select id="inpTownSelect" onchange="mjOnTownSelectChanged('client')" class="w-full px-3 py-2 rounded-xl border border-amber-300 text-sm font-bold text-slate-900 bg-white"></select>
+          <input id="inpTown" type="text" value="" placeholder="பிற ஊர் பெயர் உள்ளிடவும்" oninput="calculateAndFillBook()" class="hidden mt-1.5 w-full px-3 py-2 rounded-xl border border-amber-400 text-sm font-bold text-slate-900 bg-amber-50/40" />
         </div>
         <div>
           <label class="block text-xs font-extrabold text-amber-950 mb-1">பஞ்சாங்க கணித முறை (முதன்மை: 28 நம்பர் பாம்பு பஞ்சாங்கம்)</label>
@@ -453,6 +454,15 @@
         <div>
           <label class="block text-xs font-extrabold text-amber-950 mb-1">ஜாதகம் கணித்தவர் பெயர் & கைபேசி எண்</label>
           <input id="inpAstrologer" type="text" value="முருகேசன் ஜோதிடம் - ஜெ. கரண் BE, DA. | 7418609681" oninput="calculateAndFillBook()" class="w-full px-3 py-2 rounded-xl border border-amber-300 text-sm font-bold text-slate-900" />
+        </div>
+        <div>
+          <label class="block text-xs font-extrabold text-amber-950 mb-1">ஜாதகம் கணித்தவர் மாவட்டம்</label>
+          <select id="inpAstroDistrict" onchange="mjOnDistrictChanged('astro')" class="w-full px-3 py-2 rounded-xl border border-amber-300 text-sm font-bold text-slate-900 bg-white"></select>
+        </div>
+        <div>
+          <label class="block text-xs font-extrabold text-amber-950 mb-1">ஜாதகம் கணித்தவர் ஊர்</label>
+          <select id="inpAstroTownSelect" onchange="mjOnTownSelectChanged('astro')" class="w-full px-3 py-2 rounded-xl border border-amber-300 text-sm font-bold text-slate-900 bg-white"></select>
+          <input id="inpAstroTown" type="text" value="சங்கராபுரம்" placeholder="பிற ஊர் பெயர் உள்ளிடவும்" oninput="calculateAndFillBook()" class="hidden mt-1.5 w-full px-3 py-2 rounded-xl border border-amber-400 text-sm font-bold text-slate-900 bg-amber-50/40" />
         </div>
       </div>
 
@@ -4533,7 +4543,11 @@
       const town = (_byId("inpTown")?.value || "").trim();
       const district = (_byId("inpDistrict")?.value || "").trim();
       const mode = _byId("inpMode")?.value || "vakya_paambu_28";
-      const astrologer = (_byId("inpAstrologer")?.value || "முருகேசன் ஜோதிடம் - ஜெ. கரண் BE, DA. | 7418609681").trim();
+      const _astroBase = (_byId("inpAstrologer")?.value || "முருகேசன் ஜோதிடம் - ஜெ. கரண் BE, DA. | 7418609681").trim();
+      const _astroTownVal = (_byId("inpAstroTown")?.value || "").trim();
+      const _astroDistVal = (_byId("inpAstroDistrict")?.value || "").trim();
+      const _astroPlace = [_astroTownVal, _astroDistVal].filter(Boolean).join(", ");
+      const astrologer = _astroPlace ? (_astroBase + " (" + _astroPlace + ")") : _astroBase;
 
       const profile = {
         id: "book_active",
@@ -9510,6 +9524,8 @@
         district: getVal("inpDistrict"),
         mode: getVal("inpMode") || "vakya_paambu_28",
         astrologer: getVal("inpAstrologer"),
+        astroDistrict: getVal("inpAstroDistrict"),
+        astroTown: getVal("inpAstroTown"),
         savedBy: (typeof IS_FRIEND_APP_MODE !== "undefined" && IS_FRIEND_APP_MODE) ? "FriendApp" : "MasterApp",
         savedAt: new Date().toISOString()
       };
@@ -9697,10 +9713,14 @@
       setVal("inpTob", c.tob);
       setVal("inpCity", c.city);
       setVal("inpSunrise", c.sunrise);
-      setVal("inpTown", c.town);
       setVal("inpDistrict", c.district);
+      mjPopulateTownDropdown(c.district || "", "inpTownSelect", "inpTown", c.town || "");
       setVal("inpMode", c.mode);
       if (c.astrologer) setVal("inpAstrologer", c.astrologer);
+      if (c.astroDistrict) {
+        setVal("inpAstroDistrict", c.astroDistrict);
+        mjPopulateTownDropdown(c.astroDistrict, "inpAstroTownSelect", "inpAstroTown", c.astroTown || "");
+      }
 
       mjCloseClientResults();
       if (typeof IS_FRIEND_APP_MODE !== "undefined" && IS_FRIEND_APP_MODE) {
@@ -10040,7 +10060,96 @@
       }
     })();
 
+
+    // --- 🗺️ தமிழ்நாடு 38 மாவட்டங்கள் & ஊர்கள் தரவுத்தளம் (Client + Astrologer Dropdowns) ---
+    const TN_DISTRICTS_TOWNS_DB = {"அரியலூர்": ["அரியலூர்", "ஜெயங்கொண்டம்", "உடையார்பாளையம்", "செந்துறை", "ஆண்டிமடம்", "திருமானூர்", "தா.பழூர்", "கங்கைகொண்ட சோழபுரம்", "விக்ரமங்கலம்", "கீழப்பழூர்"], "செங்கல்பட்டு": ["செங்கல்பட்டு", "தாம்பரம்", "பல்லாவரம்", "கூடுவாஞ்சேரி", "மறைமலைநகர்", "மாமல்லபுரம்", "மதுராந்தகம்", "செய்யூர்", "திருப்போரூர்", "திருக்கழுக்குன்றம்", "வண்டலூர்", "அச்சரப்பாக்கம்", "கேளம்பாக்கம்", "சிங்கபெருமாள்கோவில்"], "சென்னை": ["சென்னை", "அடையாறு", "அண்ணா நகர்", "அம்பத்தூர்", "ஆவடி", "கிண்டி", "கோடம்பாக்கம்", "சைதாப்பேட்டை", "தி.நகர்", "திருவொற்றியூர்", "நுங்கம்பாக்கம்", "பூந்தமல்லி", "பெரம்பூர்", "மயிலாப்பூர்", "மாதவரம்", "ராயபுரம்", "வடபழனி", "வேளச்சேரி", "சோழிங்கநல்லூர்", "பள்ளிக்கரணை", "போரூர்", "தாம்பரம்"], "கோயம்புத்தூர்": ["கோயம்புத்தூர்", "பொள்ளாச்சி", "மேட்டுப்பாளையம்", "வால்பாறை", "சூலூர்", "அன்னூர்", "கிணத்துக்கடவு", "மதுக்கரை", "பேரூர்", "தொண்டாமுத்தூர்", "காரமடை", "ஆனைமலை", "நெகமம்", "சரவணம்பட்டி", "பீளமேடு"], "கடலூர்": ["கடலூர்", "சிதம்பரம்", "நெய்வேலி", "பண்ருட்டி", "விருத்தாசலம்", "திட்டக்குடி", "காட்டுமன்னார்கோவில்", "குறிஞ்சிப்பாடி", "புவனகிரி", "ஸ்ரீமுஷ்ணம்", "வேப்பூர்", "பரங்கிப்பேட்டை", "வடலூர்", "பெண்ணாடம்", "மங்களூர்"], "தர்மபுரி": ["தர்மபுரி", "அரூர்", "பாப்பிரெட்டிப்பட்டி", "பென்னாகரம்", "பாலக்கோடு", "நல்லம்பள்ளி", "காரிமங்கலம்", "மொரப்பூர்", "கடத்தூர்", "ஒகேனக்கல்", "கம்பைநல்லூர்", "மல்லாபுரம்"], "திண்டுக்கல்": ["திண்டுக்கல்", "பழனி", "கொடைக்கானல்", "ஒட்டன்சத்திரம்", "நிலக்கோட்டை", "நத்தம்", "வேடசந்தூர்", "ஆத்தூர்", "வத்தலக்குண்டு", "சின்னாளபட்டி", "கன்னிவாடி", "அய்யலூர்", "குஜிலியம்பாறை"], "ஈரோடு": ["ஈரோடு", "கோபிசெட்டிபாளையம்", "சத்தியமங்கலம்", "பவானி", "பெருந்துறை", "அந்தியூர்", "கொடுமுடி", "மொடக்குறிச்சி", "நம்பியூர்", "தாளவாடி", "சென்னிமலை", "சித்தோடு", "அம்மாபேட்டை", "புஞ்சைபுளியம்பட்டி"], "கள்ளக்குறிச்சி": ["சங்கராபுரம்", "கள்ளக்குறிச்சி", "திருக்கோவிலூர்", "உளுந்தூர்பேட்டை", "சின்னசேலம்", "ரிஷிவந்தியம்", "தியாகதுருகம்", "கல்வராயன்மலை", "வடபொன்பரப்பி", "மூங்கில்துறைப்பட்டு", "கச்சிராயப்பாளையம்", "மணலூர்பேட்டை", "எலவனாசூர்கோட்டை", "பகண்டை கூட்டுரோடு", "அரசம்பட்டு", "வாணாபுரம்", "அரியலூர் (கள்ளக்குறிச்சி)", "நைனார்பாளையம்", "கூத்தக்குடி", "பூட்டை", "தேவபாண்டலம்"], "காஞ்சிபுரம்": ["காஞ்சிபுரம்", "ஸ்ரீபெரும்புதூர்", "உத்திரமேரூர்", "வாலாஜாபாத்", "குன்றத்தூர்", "மாங்காடு", "சுங்குவார்சத்திரம்", "ஒரகடம்", "படப்பை", "முடிச்சூர்"], "கன்னியாகுமரி": ["நாகர்கோவில்", "கன்னியாகுமரி", "மார்த்தாண்டம்", "குளச்சல்", "குழித்துறை", "பத்மநாபபுரம்", "தக்கலை", "களியக்காவிளை", "திருவட்டாறு", "அகஸ்தீஸ்வரம்", "கருங்கல்", "பூதப்பாண்டி", "ஆரல்வாய்மொழி"], "கரூர்": ["கரூர்", "குளித்தலை", "அரவக்குறிச்சி", "கிருஷ்ணராயபுரம்", "கடவூர்", "மண்மங்கலம்", "புகளூர்", "பள்ளப்பட்டி", "லாலாப்பேட்டை", "தோகைமலை", "தரங்கம்பட்டி"], "கிருஷ்ணகிரி": ["கிருஷ்ணகிரி", "ஓசூர்", "தென்கனிக்கோட்டை", "போச்சம்பள்ளி", "ஊத்தங்கரை", "பர்கூர்", "சூளகிரி", "அஞ்செட்டி", "காவேரிப்பட்டினம்", "மத்தூர்", "ராயக்கோட்டை", "வேப்பனப்பள்ளி"], "மதுரை": ["மதுரை", "திருமங்கலம்", "மேலூர்", "உசிலம்பட்டி", "வாடிப்பட்டி", "பேரையூர்", "திருப்பரங்குன்றம்", "அலங்காநல்லூர்", "சோழவந்தான்", "பாலமேடு", "கள்ளிக்குடி", "சேடபட்டி", "ஒத்தக்கடை", "திருமோகூர்"], "மயிலாடுதுறை": ["மயிலாடுதுறை", "சீர்காழி", "தரங்கம்பாடி", "குத்தாலம்", "வைத்தீஸ்வரன்கோவில்", "பூம்புகார்", "கொள்ளிடம்", "செம்பனார்கோவில்", "மணல்மேடு", "திருக்கடையூர்"], "நாகப்பட்டினம்": ["நாகப்பட்டினம்", "வேதாரண்யம்", "திருக்குவளை", "கீழ்வேளூர்", "வேளாங்கண்ணி", "நாகூர்", "திருமருகல்", "தலைஞாயிறு", "கீழையூர்"], "நாமக்கல்": ["நாமக்கல்", "திருச்செங்கோடு", "ராசிபுரம்", "பரமத்தி வேலூர்", "குமாரபாளையம்", "பள்ளிபாளையம்", "சேந்தமங்கலம்", "கொல்லிமலை", "மோகனூர்", "எருமப்பட்டி", "புதுச்சத்திரம்", "வெண்ணந்தூர்"], "நீலகிரி": ["உதகமண்டலம் (ஊட்டி)", "குன்னூர்", "கோத்தகிரி", "கூடலூர்", "பந்தலூர்", "குந்தா", "அருவங்காடு", "வெல்லிங்டன்", "மசினகுடி"], "பெரம்பலூர்": ["பெரம்பலூர்", "வேப்பந்தட்டை", "குன்னம்", "ஆலத்தூர்", "வேப்பூர்", "லப்பைக்குடிகாடு", "அரும்பாவூர்", "பூலாம்பாடி", "பாடாலூர்"], "புதுக்கோட்டை": ["புதுக்கோட்டை", "அறந்தாங்கி", "ஆலங்குடி", "இலுப்பூர்", "கந்தர்வகோட்டை", "கரம்பக்குடி", "குளத்தூர்", "மணமேல்குடி", "பொன்னமராவதி", "திருமயம்", "ஆவுடையார்கோவில்", "விராலிமலை", "கீரனூர்"], "இராமநாதபுரம்": ["இராமநாதபுரம்", "இராமேஸ்வரம்", "பரமக்குடி", "முதுகுளத்தூர்", "கமுதி", "கடலாடி", "கீழக்கரை", "திருவாடானை", "ஆர்.எஸ்.மங்கலம்", "மண்டபம்", "தொண்டி", "சாயல்குடி"], "இராணிப்பேட்டை": ["இராணிப்பேட்டை", "அரக்கோணம்", "ஆற்காடு", "வாலாஜாப்பேட்டை", "சோளிங்கர்", "நெமிலி", "கலவை", "திமிரி", "காவேரிப்பாக்கம்", "மேல்விஷாரம்"], "சேலம்": ["சேலம்", "ஆத்தூர்", "மேட்டூர்", "ஓமலூர்", "சங்ககிரி", "எடப்பாடி", "வாழப்பாடி", "கெங்கவல்லி", "பெத்தநாயக்கன்பாளையம்", "ஏற்காடு", "காடையாம்பட்டி", "தாரமங்கலம்", "இளம்பிள்ளை", "தலைவாசல்", "மல்லூர்"], "சிவகங்கை": ["சிவகங்கை", "காரைக்குடி", "தேவகோட்டை", "திருப்பத்தூர்", "மானாமதுரை", "இளையான்குடி", "காளையார்கோவில்", "சிங்கம்புணரி", "திருப்புவனம்", "பிள்ளையார்பட்டி", "கல்லல்"], "தென்காசி": ["தென்காசி", "சங்கரன்கோவில்", "கடையநல்லூர்", "செங்கோட்டை", "ஆலங்குளம்", "சிவகிரி", "திருவேங்கடம்", "வீரகேரளம்புதூர்", "குற்றாலம்", "புளியங்குடி", "பாவூர்சத்திரம்", "சுரண்டை"], "தஞ்சாவூர்": ["தஞ்சாவூர்", "கும்பகோணம்", "பட்டுக்கோட்டை", "ஒரத்தநாடு", "பாபநாசம்", "திருவையாறு", "திருவிடைமருதூர்", "பேராவூரணி", "பூதலூர்", "வல்லம்", "அதிராம்பட்டினம்", "சுவாமிமலை", "திருபுவனம்"], "தேனி": ["தேனி", "பெரியகுளம்", "போடிநாயக்கனூர்", "கம்பம்", "உத்தமபாளையம்", "ஆண்டிப்பட்டி", "சின்னமனூர்", "கூடலூர்", "தேவதானப்பட்டி", "வீரபாண்டி"], "தூத்துக்குடி": ["தூத்துக்குடி", "கோவில்பட்டி", "திருச்செந்தூர்", "ஸ்ரீவைகுண்டம்", "சாத்தான்குளம்", "ஏரல்", "எட்டயபுரம்", "கயத்தாறு", "ஒட்டப்பிடாரம்", "விளாத்திகுளம்", "கழுகுமலை", "உடன்குடி", "நாசரேத்"], "திருச்சிராப்பள்ளி": ["திருச்சிராப்பள்ளி", "ஸ்ரீரங்கம்", "லால்குடி", "மணப்பாறை", "முசிறி", "துறையூர்", "தொட்டியம்", "திருவெறும்பூர்", "மண்ணச்சநல்லூர்", "மருங்காபுரி", "புள்ளம்பாடி", "சமயபுரம்", "உப்பிலியபுரம்"], "திருநெல்வேலி": ["திருநெல்வேலி", "பாளையங்கோட்டை", "அம்பாசமுத்திரம்", "வள்ளியூர்", "நாங்குநேரி", "சேரன்மகாதேவி", "திசையன்விளை", "மானூர்", "இராதாபுரம்", "களக்காடு", "கல்லிடைக்குறிச்சி", "விக்ரமசிங்கபுரம்", "பணகுடி"], "திருப்பத்தூர்": ["திருப்பத்தூர்", "வாணியம்பாடி", "ஆம்பூர்", "நாட்றம்பள்ளி", "ஜோலார்பேட்டை", "ஏலகிரி", "ஆலங்காயம்", "கந்திலி", "மாதனூர்"], "திருப்பூர்": ["திருப்பூர்", "அவிநாசி", "பல்லடம்", "தாராபுரம்", "காங்கேயம்", "உடுமலைப்பேட்டை", "மடத்துக்குளம்", "ஊத்துக்குளி", "வெள்ளக்கோவில்", "மூலனூர்", "குண்டடம்", "பொங்கலூர்"], "திருவள்ளூர்": ["திருவள்ளூர்", "ஆவடி", "பூந்தமல்லி", "பொன்னேரி", "கும்மிடிப்பூண்டி", "திருத்தணி", "ஊத்துக்கோட்டை", "பள்ளிப்பட்டு", "ஆர்.கே.பேட்டை", "திருநின்றவூர்", "செங்குன்றம்", "மீஞ்சூர்", "பழவேற்காடு"], "திருவண்ணாமலை": ["திருவண்ணாமலை", "ஆரணி", "செய்யாறு", "போளூர்", "வந்தவாசி", "செங்கம்", "கலசப்பாக்கம்", "தண்டராம்பட்டு", "கீழ்பெண்ணாத்தூர்", "ஜமுனாமரத்தூர்", "வெம்பாக்கம்", "சேத்துப்பட்டு", "கண்ணமங்கலம்", "தேசூர்", "வேட்டவலம்"], "திருவாரூர்": ["திருவாரூர்", "மன்னார்குடி", "திருத்துறைப்பூண்டி", "நன்னிலம்", "நீடாமங்கலம்", "குடவாசல்", "வலங்கைமான்", "கூத்தாநல்லூர்", "முத்துப்பேட்டை", "கோட்டூர்", "கொரடாச்சேரி"], "வேலூர்": ["வேலூர்", "குடியாத்தம்", "காட்பாடி", "அணைக்கட்டு", "கே.வி.குப்பம்", "பேரணாம்பட்டு", "பள்ளிகொண்டா", "ஒடுகத்தூர்", "திருவலம்", "பாகாயம்"], "விழுப்புரம்": ["விழுப்புரம்", "திண்டிவனம்", "செஞ்சி", "விக்கிரவாண்டி", "வானூர்", "கண்டாச்சிபுரம்", "மரக்காணம்", "மேல்மலையனூர்", "திருவெண்ணெய்நல்லூர்", "அனந்தபுரம்", "வளவனூர்", "கோட்டக்குப்பம்", "மயிலம்", "ஒலக்கூர்", "அரகண்டநல்லூர்"], "விருதுநகர்": ["விருதுநகர்", "சிவகாசி", "இராஜபாளையம்", "ஸ்ரீவில்லிபுத்தூர்", "அருப்புக்கோட்டை", "சாத்தூர்", "திருச்சுழி", "காரியாபட்டி", "வத்திராயிருப்பு", "வெம்பக்கோட்டை", "திருத்தங்கல்"], "புதுச்சேரி": ["புதுச்சேரி", "காரைக்கால்", "வில்லியனூர்", "பாகூர்", "உழவர்கரை", "அரியாங்குப்பம்", "மண்ணாடிப்பட்டு", "திருபுவனை", "மாஹே", "ஏனாம்"]};
+
+    function mjPopulateDistrictDropdown(selectId, defaultVal) {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      const districts = Object.keys(TN_DISTRICTS_TOWNS_DB).sort(function(a, b) { return a.localeCompare(b, "ta"); });
+      let html = '<option value="">-- மாவட்டம் தேர்ந்தெடு --</option>';
+      districts.forEach(function(d) {
+        const isSel = (defaultVal && d === defaultVal) ? ' selected' : '';
+        html += '<option value="' + mjEscapeHtml(d) + '"' + isSel + '>' + mjEscapeHtml(d) + '</option>';
+      });
+      sel.innerHTML = html;
+    }
+
+    function mjPopulateTownDropdown(districtName, selectId, customInputId, preferredTown) {
+      const sel = document.getElementById(selectId);
+      const customInp = document.getElementById(customInputId);
+      if (!sel) return;
+      const towns = TN_DISTRICTS_TOWNS_DB[districtName] || [];
+      let html = '<option value="">-- ஊர் தேர்ந்தெடு --</option>';
+      towns.forEach(function(t) {
+        html += '<option value="' + mjEscapeHtml(t) + '">' + mjEscapeHtml(t) + '</option>';
+      });
+      html += '<option value="__OTHER__">✏️ பிற ஊர் (கைமுறையாக எழுத)</option>';
+      sel.innerHTML = html;
+
+      if (preferredTown) {
+        const cleanPref = String(preferredTown).split(",")[0].trim();
+        if (towns.indexOf(cleanPref) >= 0) {
+          sel.value = cleanPref;
+          if (customInp) {
+            customInp.value = cleanPref;
+            customInp.classList.add("hidden");
+          }
+        } else if (cleanPref) {
+          sel.value = "__OTHER__";
+          if (customInp) {
+            customInp.value = preferredTown;
+            customInp.classList.remove("hidden");
+          }
+        }
+      } else if (customInp) {
+        customInp.value = "";
+        customInp.classList.add("hidden");
+      }
+    }
+
+    function mjOnDistrictChanged(kind) {
+      if (kind === "astro") {
+        const d = document.getElementById("inpAstroDistrict")?.value || "";
+        mjPopulateTownDropdown(d, "inpAstroTownSelect", "inpAstroTown", "");
+      } else {
+        const d = document.getElementById("inpDistrict")?.value || "";
+        mjPopulateTownDropdown(d, "inpTownSelect", "inpTown", "");
+      }
+      if (typeof calculateAndFillBook === "function") calculateAndFillBook();
+    }
+
+    function mjOnTownSelectChanged(kind) {
+      const selId = (kind === "astro") ? "inpAstroTownSelect" : "inpTownSelect";
+      const inpId = (kind === "astro") ? "inpAstroTown" : "inpTown";
+      const sel = document.getElementById(selId);
+      const inp = document.getElementById(inpId);
+      if (!sel || !inp) return;
+      if (sel.value === "__OTHER__") {
+        inp.value = "";
+        inp.classList.remove("hidden");
+        inp.focus();
+      } else {
+        inp.value = sel.value;
+        inp.classList.add("hidden");
+      }
+      if (typeof calculateAndFillBook === "function") calculateAndFillBook();
+    }
+
+    function mjInitTamilNaduPlaceDropdowns() {
+      mjPopulateDistrictDropdown("inpDistrict", "");
+      mjPopulateTownDropdown("", "inpTownSelect", "inpTown", "");
+      mjPopulateDistrictDropdown("inpAstroDistrict", "கள்ளக்குறிச்சி");
+      mjPopulateTownDropdown("கள்ளக்குறிச்சி", "inpAstroTownSelect", "inpAstroTown", "சங்கராபுரம்");
+    }
+
+    window.mjOnDistrictChanged = mjOnDistrictChanged;
+    window.mjOnTownSelectChanged = mjOnTownSelectChanged;
+    window.mjInitTamilNaduPlaceDropdowns = mjInitTamilNaduPlaceDropdowns;
+
     window.addEventListener("DOMContentLoaded", function() {
+      mjInitTamilNaduPlaceDropdowns();
       mjInitFirebase();
     });
   </script>
