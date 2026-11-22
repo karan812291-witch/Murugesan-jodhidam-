@@ -9570,7 +9570,7 @@
         const pl = p[pk];
         const statusStr = pk === "Lagnam"
           ? "உதய லக்னம்"
-          : `${pl.dignity ? pl.dignity.label : "சமம்"}${pl.isRetrograde ? " (வக்கிரம்)" : ""}`;
+          : `${pl.dignity ? (pl.dignity.tag || pl.dignity.excelStatus || pl.dignity.label || "சமம்") : "சமம்"}${pl.isRetrograde ? " (வக்கிரம்)" : ""}`;
         return `
           <tr>
             <td class="font-extrabold text-slate-900">${_escHtml(pl.meta ? pl.meta.ta : pk)}</td>
@@ -10088,6 +10088,7 @@
           ${makeCalcFooter(6, totalPages)}
         </div>
       `;
+      if (typeof window.mjApplyMobileA4Scale === "function") window.mjApplyMobileA4Scale();
     }
     function mjEnsureCalcStepsReady() {
       const el = _byId("calcStepsTabContainer");
@@ -10097,41 +10098,84 @@
         return;
       }
       try {
-        if (typeof computeTamilAstrology === "function") {
+        if (typeof calculateFullJathagam === "function") {
           const dobEl = _byId("inpDob");
           const tobEl = _byId("inpTob");
           const nameEl = _byId("inpName");
-          const dob = (dobEl && dobEl.value) ? dobEl.value : "1999-09-10";
-          const tobRaw = (tobEl && tobEl.value) ? tobEl.value : "07:20";
-          const isSample = !(dobEl && dobEl.value);
-          const meta = {
-            name: (nameEl && nameEl.value && nameEl.value.trim()) ? nameEl.value.trim() : (isSample ? "மாதிரி ஜாதகம் (Sample)" : "ஜாதகர்"),
+          const dob = (dobEl && dobEl.value && dobEl.value.trim()) ? dobEl.value.trim() : "2019-09-11";
+          const tobRaw = (tobEl && tobEl.value && tobEl.value.trim()) ? tobEl.value.trim() : "13:31";
+          const tob = tobRaw.length === 5 ? tobRaw + ":00" : tobRaw;
+          const isSample = !(dobEl && dobEl.value && dobEl.value.trim() && tobEl && tobEl.value && tobEl.value.trim());
+          const cityId = (_byId("inpCity") && _byId("inpCity").value) ? _byId("inpCity").value : "sankarapuram";
+          const cityObj = (typeof CITIES_DB !== "undefined" && CITIES_DB.find(function(c) { return c.id === cityId; })) || { lat: 11.8897, lon: 78.9161, tz: 5.5, name: "சங்கராபுரம்" };
+          const mode = (_byId("inpMode") && _byId("inpMode").value) ? _byId("inpMode").value : "vakya_paambu_28";
+          const sunrise = (_byId("inpSunrise") && _byId("inpSunrise").value) ? _byId("inpSunrise").value : "06:06";
+          const town = (_byId("inpTown") && _byId("inpTown").value && _byId("inpTown").value.trim()) ? _byId("inpTown").value.trim() : (cityObj.name || "சங்கராபுரம்");
+          const gender = (_byId("inpGender") && _byId("inpGender").value) ? _byId("inpGender").value : "Female";
+          const name = (nameEl && nameEl.value && nameEl.value.trim()) ? nameEl.value.trim() : (isSample ? "மாதிரி ஜாதகம் (Sample)" : "ஜாதகர்");
+
+          const profile = {
+            id: "calcsteps_ref",
+            name: name,
+            gender: gender,
             dob: dob,
-            tob: tobRaw,
-            place: (_byId("inpCity") && _byId("inpCity").selectedOptions && _byId("inpCity").selectedOptions[0]) ? _byId("inpCity").selectedOptions[0].textContent : "சங்கராபுரம், கள்ளக்குறிச்சி",
-            lat: 11.8842,
-            lon: 78.9022
+            tob: tob,
+            cityId: cityId,
+            placeName: town,
+            panchangamMode: mode,
+            lat: cityObj.lat,
+            lon: cityObj.lon,
+            tz: cityObj.tz,
+            customSunrise: sunrise
           };
-          const calc = computeTamilAstrology(dob, tobRaw, meta.lat, meta.lon);
+          const calc = calculateFullJathagam(profile);
           if (calc) {
             const pe = calc.paambuExtras || {};
             const db = calc.dasaBalance || {};
+            const [yyyy, mm, dd] = dob.split("-").map(Number);
+            const dobFormatted = `${String(dd).padStart(2, "0")}-${String(mm).padStart(2, "0")}-${yyyy}`;
+            const tob12Str = (typeof format24To12Hour === "function") ? format24To12Hour(tobRaw) : tobRaw;
+            const tamilYearClean = (pe.tamilYearName || "விகாரி").split(" ")[0];
+            const tamilMonthTa = pe.tamilMonthName || "ஆவணி";
+            const tamilDateNum = pe.tamilDateNum || 25;
+            const weekdayTa = (pe.varaDetails && pe.varaDetails.ta) ? pe.varaDetails.ta : "புதன்கிழமை";
+            const sunRemDot = (typeof formatVinToNazhigaiDot === "function") ? formatVinToNazhigaiDot(pe.sunRemVinAtSunrise || 192) : "3.12";
+            const remY = db.remYears !== undefined ? db.remYears : (db.years !== undefined ? db.years : 0);
+            const remM = db.remMonths !== undefined ? db.remMonths : (db.months !== undefined ? db.months : 0);
+            const remD = db.remDays !== undefined ? db.remDays : (db.days !== undefined ? db.days : 0);
+            const fullDasaYears = db.fullYears || 7;
+            const totalRemDays = remY * 360 + remM * 30 + remD;
+            const totalElapDays = Math.max(0, fullDasaYears * 360 - totalRemDays);
+            const elapY = Math.floor(totalElapDays / 360);
+            const elapM = Math.floor((totalElapDays % 360) / 30);
+            const elapD = Math.floor(totalElapDays % 30);
+
+            const meta = {
+              name: name,
+              dob: dob,
+              tob: tobRaw,
+              sunrise: sunrise,
+              town: town,
+              lat: cityObj.lat,
+              lon: cityObj.lon,
+              mode: mode
+            };
             const ctx = {
-              dobFormatted: (typeof formatIsoToDMY === "function") ? formatIsoToDMY(dob) : dob,
-              tob12Str: (typeof format24To12Hour === "function") ? format24To12Hour(tobRaw) : tobRaw,
-              weekdayTa: pe.weekdayTa || "வெள்ளிக்கிழமை",
-              tamilYearClean: pe.tamilYearTa || "பிரமாதி",
-              tamilMonthTa: pe.tamilMonthTa || "ஆவணி",
-              tamilDateNum: pe.tamilDateNum || 25,
-              sunRemDot: pe.sunRemDot || "15.00",
-              birthDasaLord: db.lordTa || "சூரியன்",
-              fullDasaYears: db.fullYears || 6,
-              remY: db.years !== undefined ? db.years : 0,
-              remM: db.months !== undefined ? db.months : 0,
-              remD: db.days !== undefined ? db.days : 0,
-              elapY: db.elapsedYears !== undefined ? db.elapsedYears : 0,
-              elapM: db.elapsedMonths !== undefined ? db.elapsedMonths : 0,
-              elapD: db.elapsedDays !== undefined ? db.elapsedDays : 0
+              dobFormatted: dobFormatted,
+              tob12Str: tob12Str,
+              tamilYearClean: tamilYearClean,
+              tamilMonthTa: tamilMonthTa,
+              tamilDateNum: tamilDateNum,
+              weekdayTa: weekdayTa,
+              sunRemDot: sunRemDot,
+              birthDasaLord: db.lordTa || "செவ்வாய்",
+              fullDasaYears: fullDasaYears,
+              remY: remY,
+              remM: remM,
+              remD: remD,
+              elapY: elapY,
+              elapM: elapM,
+              elapD: elapD
             };
             renderStepByStepCalculationTab(calc, meta, ctx);
             if (isSample) {
@@ -10143,15 +10187,12 @@
           }
         }
       } catch (err) {
-        console.warn("Calc steps auto-render fallback:", err);
+        console.error("Calc steps auto-render fallback error:", err);
       }
       if (typeof window.mjApplyMobileA4Scale === "function") window.mjApplyMobileA4Scale();
     }
     window.mjEnsureCalcStepsReady = mjEnsureCalcStepsReady;
-    window.renderStepByStepCalculationTab = function(calc, meta, ctx) {
-      renderStepByStepCalculationTab(calc, meta, ctx);
-      if (typeof window.mjApplyMobileA4Scale === "function") window.mjApplyMobileA4Scale();
-    };
+    window.renderStepByStepCalculationTab = renderStepByStepCalculationTab;
 
     async function downloadCalcStepsPDF() {
       if (IS_FRIEND_APP_MODE && !isFriendOtpUnlockedCurrent) {
