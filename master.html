@@ -259,6 +259,39 @@
         break-after: auto !important;
       }
     }
+
+    /* === ENTERPRISE MOBILE RESPONSIVE & A4 FIT-TO-SCREEN POLISH === */
+    html, body {
+      overflow-x: hidden !important;
+      max-width: 100vw !important;
+      -webkit-text-size-adjust: 100%;
+    }
+    header, section, main {
+      max-width: 100vw;
+      box-sizing: border-box;
+    }
+    @media screen and (max-width: 820px) {
+      .puthagam-page, .manual-a4-page {
+        width: 794px !important;
+        min-width: 794px !important;
+        max-width: 794px !important;
+        margin: 0 auto 14px auto !important;
+        zoom: var(--mj-a4-zoom, 0.46);
+      }
+      #puthagamBookContainer, #userManualTabContainer {
+        width: 100% !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+        padding-left: 6px !important;
+        padding-right: 6px !important;
+        box-sizing: border-box !important;
+      }
+    }
+    @media print {
+      .puthagam-page, .manual-a4-page {
+        zoom: 1 !important;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -271,7 +304,7 @@
 
 
   <!-- Top Branding Header (Master App) -->
-  <header class="no-print bg-gradient-to-r from-[#2e050d] via-[#6b0f22] to-[#2e050d] text-amber-50 border-b-4 border-amber-400 shadow-lg sticky top-0 z-40">
+  <header class="no-print bg-gradient-to-r from-[#2e050d] via-[#6b0f22] to-[#2e050d] text-amber-50 border-b-4 border-amber-400 shadow-lg static sm:sticky sm:top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-full bg-amber-500/20 border-2 border-amber-300 p-0.5 flex items-center justify-center shadow-md overflow-hidden shrink-0">
@@ -303,10 +336,6 @@
         <button id="btnHeaderManualPdf" type="button" onclick="downloadUserManualPDF()" class="px-3 py-2 rounded-xl bg-amber-200 hover:bg-amber-100 text-amber-950 font-extrabold text-xs sm:text-sm shadow flex items-center gap-1 border border-amber-400 transition cursor-pointer">
           <span>📄</span>
           <span>கையேடு PDF</span>
-        </button>
-        <button id="btnDownloadStandaloneHtml" type="button" onclick="downloadThisAppHtml()" class="px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-amber-100 border border-amber-400/40 font-bold text-xs flex items-center gap-1 transition cursor-pointer">
-          <span>⬇️</span>
-          <span>முதன்மை ஆப் பதிவிறக்கம்</span>
         </button>
       </div>
     </div>
@@ -6280,14 +6309,16 @@
       if (btnDasa) btnDasa.className = inactiveAmberCls;
       if (btnMan) btnMan.className = inactiveSkyCls;
       if (btnPad) btnPad.className = inactiveEmeraldCls;
-      if (btnAddPan) btnAddPan.className = inactivePurpleCls;
+      if (btnAddPan) btnAddPan.className = (typeof IS_FRIEND_APP_MODE !== "undefined" && IS_FRIEND_APP_MODE) ? "hidden" : inactivePurpleCls;
 
       if (currentMainAppTab === "dasa100") {
         if (dasaEl) dasaEl.classList.remove("hidden");
         if (btnDasa) btnDasa.className = activeCls;
       } else if (currentMainAppTab === "manual") {
+        if (typeof window.mjEnsureUserManualReady === "function") window.mjEnsureUserManualReady();
         if (manEl) manEl.classList.remove("hidden");
         if (btnMan) btnMan.className = activeCls;
+        if (typeof window.mjApplyMobileA4Scale === "function") window.mjApplyMobileA4Scale();
       } else if (currentMainAppTab === "padasaram") {
         if (padEl) padEl.classList.remove("hidden");
         if (btnPad) btnPad.className = activeCls;
@@ -6350,6 +6381,7 @@
     async function renderPageElementToCanvas(pageEl, scaleVal) {
       const origStyle = pageEl.getAttribute("style") || "";
       // Temporarily lock page to A4 desktop width (794px) so mobile phones also export full-size A4 PDF pages
+      pageEl.style.zoom = "1";
       pageEl.style.width = "794px";
       pageEl.style.minWidth = "794px";
       pageEl.style.maxWidth = "794px";
@@ -8190,6 +8222,7 @@
     }
 
     async function downloadUserManualPDF() {
+      if (typeof window.mjEnsureUserManualReady === "function") window.mjEnsureUserManualReady();
       switchMainAppTab("manual");
       const element = _byId("userManualTabContainer");
       if (!element) return;
@@ -10149,7 +10182,265 @@
     window.mjOnTownSelectChanged = mjOnTownSelectChanged;
     window.mjInitTamilNaduPlaceDropdowns = mjInitTamilNaduPlaceDropdowns;
 
+
+    // --- 📱 Enterprise Mobile A4 Auto-Scale & Guaranteed User Manual Renderer ---
+    function mjApplyMobileA4Scale() {
+      try {
+        const vw = Math.min(window.innerWidth || 390, document.documentElement.clientWidth || 390);
+        if (vw < 820) {
+          const z = Math.max(0.32, Math.min(1, (vw - 14) / 794));
+          document.documentElement.style.setProperty("--mj-a4-zoom", z.toFixed(4));
+        } else {
+          document.documentElement.style.setProperty("--mj-a4-zoom", "1");
+        }
+      } catch (e) {}
+    }
+
+    function mjBuildCompleteUserManualIntroPages() {
+      return `
+        <!-- கையேடு பக்கம் A: ஆப் முழு பயன்பாட்டு வழிகாட்டி (User Instructions) -->
+        <div class="puthagam-page manual-a4-page">
+          <div class="puthagam-frame-red">
+            <div class="space-y-3">
+              <div class="text-center border-b-2 border-[#8b1c1c] pb-2.5">
+                <div class="inline-block px-3.5 py-0.5 rounded-full bg-[#8b1c1c] text-amber-100 text-[11px] font-extrabold tracking-wide mb-1">
+                  📘 அதிகாரப்பூர்வ பயனர் கையேடு &amp; கணித விளக்கப் புத்தகம்
+                </div>
+                <h2 class="text-xl font-extrabold text-[#7f1d1d] serif-ta">முருகேசன் ஜோதிடம் — ஆப் பயன்பாட்டு வழிகாட்டி</h2>
+                <p class="text-[11px] font-bold text-slate-700 mt-0.5">
+                  © முருகேசன் ஜோதிடம் - ஜெ. கரண் BE, DA. • 7418609681 • சங்கராபுரம், கள்ளக்குறிச்சி
+                </p>
+              </div>
+
+              <div class="p-3 rounded-xl bg-amber-50/90 border border-amber-300 space-y-1.5">
+                <h3 class="text-xs font-extrabold text-[#8b1c1c]">🚀 1. ஆப்பைப் பயன்படுத்தும் எளிய 5 படிகள் (How to Use This App)</h3>
+                <ol class="list-decimal pl-5 space-y-1.5 text-[11.5px] font-semibold text-slate-800 leading-relaxed">
+                  <li><strong>ஜாதக விவரங்கள் உள்ளீடு:</strong> ஆப் திறந்தவுடன் ஜாதகர் பெயர், தந்தை பெயர், தாய் பெயர், பாலினம், <strong>ஆங்கிலப் பிறந்த தேதி</strong> மற்றும் <strong>பிறந்த நேரம்</strong> உள்ளிடவும். தேதி &amp; நேரம் உள்ளிட்ட உடனே <strong>26-பக்க பாரம்பரிய ஜாதகப் புத்தகம்</strong> மற்றும் <strong>100-வயது தசா புத்தி அட்டவணை</strong> தானாகக் கணிக்கப்படும்.</li>
+                  <li><strong>மாவட்டம் &amp; ஊர் தேர்வு:</strong> தமிழ்நாட்டின் 38 மாவட்டங்கள் (+ புதுச்சேரி) பட்டியலில் மாவட்டத்தைத் தேர்ந்தெடுத்தவுடன் அந்த மாவட்டத்தின் ஊர்கள் தானாக வரும். பட்டியலில் இல்லாத சிறிய கிராமங்களுக்கு <strong>"✏️ பிற ஊர்"</strong> தேர்ந்தெடுத்து நேரடியாக எழுதலாம்.</li>
+                  <li><strong>பஞ்சாங்க கணித முறை தேர்வு:</strong> <strong>அசல் 28 நம்பர் பாம்பு பஞ்சாங்கம் (சுத்த வாக்கியம்)</strong> முதன்மை முறையாக இருக்கும்; தேவைக்கேற்ப <strong>ஆற்காடு பாம்பு வாக்கியம்</strong> அல்லது <strong>சுத்த திருக்கணிதம்</strong> முறைக்கு உடனே மாற்றிக் கொள்ளலாம்.</li>
+                  <li><strong>Firebase Cloud சேமிப்பு &amp; போன் தேடல்:</strong> வாடிக்கையாளர் 10-இலக்க கைபேசி எண்ணை உள்ளிட்டு <strong>💾 சேமிக்க</strong> அழுத்தினால் <strong>Firebase Cloud Database</strong>-ல் நிரந்தரமாகச் சேமிக்கப்படும். பிற்காலத்தில் <strong>🔍 தேடு</strong> பெட்டியில் கைபேசி எண் அல்லது பெயர் போட்டு ஒரே கிளிக்கில் பழைய ஜாதகத்தை மீண்டும் எடுக்கலாம்.</li>
+                  <li><strong>PDF பதிவிறக்கம் &amp; நேரடி அச்சு:</strong> மேலே உள்ள <strong>📥 ஜாதகப் புத்தகம் பதிவிறக்கம்</strong> பொத்தானை அழுத்தினால் ஜாதகர் பெயரிலேயே முழு 26-பக்க A4 PDF பதிவிறக்கம் ஆகும்; <strong>🖨️ நேரடி அச்சு</strong> மூலம் உடனே பிரிண்ட் எடுக்கலாம்.</li>
+                </ol>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2.5">
+                <div class="p-3 rounded-xl bg-emerald-50/80 border border-emerald-300 space-y-1">
+                  <h3 class="text-xs font-extrabold text-emerald-950">👑 முதன்மை ஆப் &amp; 🔐 நண்பர் ஆப் (Live OTP)</h3>
+                  <ul class="list-disc pl-4 space-y-1 text-[11px] font-semibold text-slate-800 leading-snug">
+                    <li><strong>நண்பர் ஆப்:</strong> ஒவ்வொரு முறை பிறந்த தேதி / நேரம் மாற்றும்போதும் 6-இலக்கக் குறியீடு உருவாகும். <strong>☁️ ஆன்லைன் OTP கோரிக்கை</strong> (அல்லது வாட்ஸ்அப்/SMS) அனுப்பலாம்.</li>
+                    <li><strong>முதன்மை ஆப்:</strong> வந்த கோரிக்கையை <strong>✅ உடனே அனுமதி</strong> அழுத்தியவுடன் நண்பர் ஆப் தானாகவே திறந்து ஜாதகம் கணிக்கப்படும்.</li>
+                    <li><strong>புதிய பஞ்சாங்கம் (Tab 5):</strong> முதன்மை ஆப்பில் சேர்க்கும் புதிய வருடப் பஞ்சாங்கம் (2027, 2028...) Firebase Cloud வழியாக அனைத்து நண்பர் ஆப்களிலும் தானாகப் புதுப்பிக்கப்படும்.</li>
+                  </ul>
+                </div>
+
+                <div class="p-3 rounded-xl bg-sky-50/80 border border-sky-300 space-y-1">
+                  <h3 class="text-xs font-extrabold text-sky-950">📑 ஆப்பில் உள்ள முக்கியப் பிரிவுகள்</h3>
+                  <ul class="list-disc pl-4 space-y-1 text-[11px] font-semibold text-slate-800 leading-snug">
+                    <li><strong>Tab 1:</strong> 26-பக்க பாரம்பரிய A4 ஜாதகப் புத்தகம் (தெய்வப் படம், திருக்குறள், ராசி/நவாம்ச கட்டம், பலன்கள்).</li>
+                    <li><strong>Tab 2:</strong> பிறந்தது முதல் 100+ வயது வரை தேதி &amp; வயதுடன் முழு விம்சோத்தரி தசா புத்தி அட்டவணை.</li>
+                    <li><strong>Tab 3:</strong> பயனர் கையேடு, கிரக பாகை சூத்திரங்கள் &amp; ஒவ்வொரு கிரக கட்ட விளக்கம் (PDF வசதியுடன்).</li>
+                    <li><strong>Tab 4:</strong> 1987–2027 பாம்பு பஞ்சாங்க கிரகபாத சார அட்டவணை &amp; விரைவு சரிபார்ப்பு.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-rose-50/80 border-2 border-[#8b1c1c]/40 space-y-1">
+                <h3 class="text-xs font-extrabold text-[#8b1c1c]">🏆 ஏன் முருகேசன் ஜோதிடம் ஆப் 100% துல்லியமானது?</h3>
+                <ul class="list-disc pl-4 space-y-1 text-[11px] font-semibold text-slate-800 leading-snug">
+                  <li><strong>அசல் 28 நம்பர் பாம்பு பஞ்சாங்க PDF தரவுகள்:</strong> வெறும் தோராய கணிப்பு அல்ல — சென்னை மனோன்மணி விலாசம் அசல் 28 நம்பர் பாம்பு பஞ்சாங்க கிரகபாத சார புள்ளிகள் (Exact PDF Pins) நேரடியாக உள்ளே இணைக்கப்பட்டுள்ளன.</li>
+                  <li><strong>வாக்கியம் + திருக்கணிதம் இரட்டை ஆதரவு:</strong> தமிழ்நாட்டின் பாரம்பரிய வாக்கிய ஜோதிடர்கள் மற்றும் திருக்கணித ஜோதிடர்கள் இருவருக்கும் பொருந்தும் 3 கணித முறைகள் ஒரே ஆப்பில் உள்ளன.</li>
+                  <li><strong>கைக்கணக்கு சரிபார்ப்பு (Manual Override):</strong> பழைய ஓலைச்சுவடி அல்லது கைக்கணக்கு குறிப்புகளுடன் ஒப்பிட்டுத் திருத்த விரும்பினால் கிரகப் பாதம், நட்சத்திர இருப்பு, தசா இருப்பு ஆகியவற்றை நேரடியாகவும் சரிசெய்யலாம்.</li>
+                  <li><strong>ஆஃப்லைன் + கிளவுட் பாதுகாப்பு:</strong> இணையம் இல்லாதபோதும் ஜாதகம் கணிக்கலாம்; இணையம் இருக்கும்போது வாடிக்கையாளர்கள், OTP மற்றும் புதிய பஞ்சாங்கங்கள் Firebase Cloud-ல் பாதுகாப்பாகச் சேமிக்கப்படும்.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="mt-2 pt-1 border-t border-dotted border-[#8b1c1c]/40 flex items-center justify-between text-[10px] font-extrabold text-[#8b1c1c]">
+              <span>ஆப் உரிமையாளர்: © முருகேசன் ஜோதிடம்</span>
+              <span>பயனர் கையேடு — பக்கம் 1</span>
+              <span>ஜெ. கரண் BE, DA. • 7418609681</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- கையேடு பக்கம் B: கிரக பாகை & ஜோதிட கணித சூத்திரங்கள் -->
+        <div class="puthagam-page manual-a4-page">
+          <div class="puthagam-frame-red">
+            <div class="space-y-3">
+              <div class="text-center border-b-2 border-[#8b1c1c] pb-2">
+                <h2 class="text-lg font-extrabold text-[#7f1d1d] serif-ta">📐 கிரக பாகை, உதயாதி நாழிகை &amp; கட்ட கணித சூத்திரங்கள்</h2>
+                <p class="text-[11px] font-bold text-slate-700">நமது ஆப்பில் ஒவ்வொரு ஜாதகக் கட்டமும் எப்படிக் கணக்கிடப்படுகிறது என்பதற்கான முழுமையான கணித விளக்கம்</p>
+              </div>
+
+              <div class="p-3 rounded-xl bg-amber-50/90 border border-amber-300 space-y-1.5">
+                <h3 class="text-xs font-extrabold text-[#8b1c1c]">1. வானமண்டல 360° கிரக பாகை பிரிவு (Graha Pagai Logic)</h3>
+                <div class="grid grid-cols-3 gap-2 text-center text-[11px] font-extrabold">
+                  <div class="p-2 rounded-lg bg-white border border-amber-300 text-blue-950">
+                    <div class="text-sm text-[#8b1c1c]">12 ராசிகள்</div>
+                    <div>1 ராசி = 30° 00'</div>
+                    <div class="text-[10px] text-slate-600">(12 × 30° = 360°)</div>
+                  </div>
+                  <div class="p-2 rounded-lg bg-white border border-amber-300 text-blue-950">
+                    <div class="text-sm text-[#8b1c1c]">27 நட்சத்திரங்கள்</div>
+                    <div>1 நட்சத்திரம் = 13° 20'</div>
+                    <div class="text-[10px] text-slate-600">(27 × 13°20' = 360°)</div>
+                  </div>
+                  <div class="p-2 rounded-lg bg-white border border-amber-300 text-blue-950">
+                    <div class="text-sm text-[#8b1c1c]">108 பாதங்கள்</div>
+                    <div>1 பாதம் = 3° 20'</div>
+                    <div class="text-[10px] text-slate-600">(108 × 3°20' = 360°)</div>
+                  </div>
+                </div>
+                <p class="text-[11px] font-semibold text-slate-800 leading-relaxed">
+                  ஒவ்வொரு கிரகமும் வானமண்டலத்தில் நிற்கும் நிரயண பாகை (0° முதல் 360° வரை) கணக்கிடப்பட்டு, <strong>பாகை ÷ 30°</strong> மூலம் <strong>ராசி கட்டம்</strong> (மேஷம் முதல் மீனம் வரை) மற்றும் <strong>பாகை ÷ 3°20'</strong> மூலம் துல்லியமான <strong>நட்சத்திரம் &amp; பாதம் (1–4)</strong> தீர்மானிக்கப்படுகிறது.
+                </p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2.5">
+                <div class="p-3 rounded-xl bg-white border border-amber-300 space-y-1">
+                  <h3 class="text-xs font-extrabold text-[#8b1c1c]">2. உதயாதி நாழிகை சூத்திரம்</h3>
+                  <div class="p-2 rounded-lg bg-amber-50 font-extrabold text-[11px] text-blue-950 text-center border border-amber-200">
+                    உதயாதி நாழிகை = (பிறந்த நேரம் − சூரிய உதயம்) × 2.5 விநாழிகை
+                  </div>
+                  <p class="text-[11px] font-semibold text-slate-700 leading-snug">
+                    1 மணி நேரம் = 2.5 நாழிகை (150 விநாழிகை). 1 நிமிடம் = 2.5 விநாழிகை. சூரிய உதயத்திற்கு முன் பிறந்திருந்தால் 24 மணி (1440 நிமிடம்) கூட்டி முந்தைய தமிழ் நாளின் உதயாதி நாழிகை துல்லியமாகக் கணிக்கப்படும்.
+                  </p>
+                </div>
+
+                <div class="p-3 rounded-xl bg-white border border-amber-300 space-y-1">
+                  <h3 class="text-xs font-extrabold text-[#8b1c1c]">3. லக்னம் (வாக்கிய இருப்பு விதி)</h3>
+                  <div class="p-2 rounded-lg bg-amber-50 font-extrabold text-[11px] text-blue-950 text-center border border-amber-200">
+                    லக்னக் கணக்கு = உதயாதி நாழிகை − சூரியன் நின்ற ராசி இருப்பு நாழிகை
+                  </div>
+                  <p class="text-[11px] font-semibold text-slate-700 leading-snug">
+                    பிறந்த ஊரின் அட்சரேகை/தீர்க்கரேகை (Latitude/Longitude) அடிப்படையில் ஒவ்வொரு ராசியின் உதய மான நாழிகைகளைக் கழித்து, பிறந்த நொடியில் கிழக்கு அடிவானத்தில் உதயமான <strong>லக்ன ராசி &amp; பாகை</strong> கணிக்கப்படுகிறது.
+                  </p>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-white border border-amber-300 space-y-1.5">
+                <h3 class="text-xs font-extrabold text-[#8b1c1c]">4. நவாம்ச கட்டம் (108 பாத சக்கர விதி)</h3>
+                <p class="text-[11px] font-semibold text-slate-800 leading-snug">
+                  ஒவ்வொரு ராசியும் 9 நவாம்சப் பாதங்களாக (3°20' வீதம்) பிரிக்கப்பட்டு, 108 பாத வரிசையின்படி நவாம்ச ராசி கட்டம் நிரப்பப்படுகிறது:
+                </p>
+                <div class="grid grid-cols-2 gap-1.5 text-[11px] font-bold text-slate-800">
+                  <div class="p-1.5 rounded bg-rose-50 border border-rose-200">🔥 <strong>நெருப்பு ராசி</strong> (மேஷம், சிம்மம், தனுசு) → மேஷம் முதல் தனுசு வரை</div>
+                  <div class="p-1.5 rounded bg-emerald-50 border border-emerald-200">🌱 <strong>நில ராசி</strong> (ரிஷபம், கன்னி, மகரம்) → மகரம் முதல் கன்னி வரை</div>
+                  <div class="p-1.5 rounded bg-sky-50 border border-sky-200">💨 <strong>காற்று ராசி</strong> (மிதுனம், துலாம், கும்பம்) → துலாம் முதல் மிதுனம் வரை</div>
+                  <div class="p-1.5 rounded bg-indigo-50 border border-indigo-200">💧 <strong>நீர் ராசி</strong> (கடகம், விருச்சிகம், மீனம்) → கடகம் முதல் மீனம் வரை</div>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-emerald-50/80 border border-emerald-300 space-y-1">
+                <h3 class="text-xs font-extrabold text-emerald-950">5. விம்சோத்தரி தசா இருப்பு (120 வருட சுழற்சி)</h3>
+                <div class="p-2 rounded-lg bg-white font-extrabold text-[11px] text-blue-950 text-center border border-emerald-200">
+                  தசா இருப்பு = (நட்சத்திரத்தில் மீதமுள்ள பாகை ÷ 13°20') × தசா நாதன் மொத்த வருடங்கள்
+                </div>
+                <p class="text-[11px] font-semibold text-slate-800 leading-snug">
+                  சந்திரன் நின்ற ஜென்ம நட்சத்திரத்தில் கடந்த பாகை போக மீதமுள்ள பாகைக்கு ஏற்ப <strong>வருடம் – மாதம் – நாள்</strong> என பிறப்பு தசா இருப்பு கணிக்கப்பட்டு, கேது (7) → சுக்கிரன் (20) → சூரியன் (6) → சந்திரன் (10) → செவ்வாய் (7) → ராகு (18) → குரு (16) → சனி (19) → புதன் (17) என்ற வரிசையில் 100+ வயது வரை தசா புத்தி அட்டவணை தயாராகிறது.
+                </p>
+              </div>
+            </div>
+            <div class="mt-2 pt-1 border-t border-dotted border-[#8b1c1c]/40 flex items-center justify-between text-[10px] font-extrabold text-[#8b1c1c]">
+              <span>ஆப் உரிமையாளர்: © முருகேசன் ஜோதிடம்</span>
+              <span>பயனர் கையேடு — பக்கம் 2</span>
+              <span>ஜெ. கரண் BE, DA. • 7418609681</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function mjPrependManualIntroPages() {
+      const manEl = document.getElementById("userManualTabContainer");
+      if (!manEl) return;
+      if (!manEl.querySelector("#mjManualIntroWrapper")) {
+        const wrap = document.createElement("div");
+        wrap.id = "mjManualIntroWrapper";
+        wrap.innerHTML = mjBuildCompleteUserManualIntroPages();
+        manEl.insertBefore(wrap, manEl.firstChild);
+      }
+    }
+
+    function mjEnsureUserManualReady() {
+      const manEl = document.getElementById("userManualTabContainer");
+      if (!manEl) return;
+      try {
+        if (manEl.querySelectorAll(".manual-a4-page").length === 0) {
+          if (typeof calculateFullJathagam === "function" && typeof renderUserManualAndDegreeTab === "function") {
+            const dob = (document.getElementById("inpDob")?.value || "").trim() || "2019-09-11";
+            const tobRaw = (document.getElementById("inpTob")?.value || "").trim() || "13:31";
+            const tob = tobRaw.length === 5 ? tobRaw + ":00" : tobRaw;
+            const cityId = document.getElementById("inpCity")?.value || "sankarapuram";
+            const cityObj = (typeof CITIES_DB !== "undefined" && CITIES_DB.find(function(c) { return c.id === cityId; })) || { lat: 11.8897, lon: 78.9161, tz: 5.5 };
+            const mode = document.getElementById("inpMode")?.value || "vakya_paambu_28";
+            const sunrise = document.getElementById("inpSunrise")?.value || "06:06";
+            const name = (document.getElementById("inpName")?.value || "").trim() || "மாதிரி ஜாதகம்";
+            const gender = document.getElementById("inpGender")?.value || "Female";
+            const town = (document.getElementById("inpTown")?.value || "").trim() || "சங்கராபுரம்";
+
+            const profile = {
+              id: "manual_ref",
+              name: name,
+              gender: gender,
+              dob: dob,
+              tob: tob,
+              cityId: cityId,
+              placeName: town,
+              panchangamMode: mode,
+              lat: cityObj.lat,
+              lon: cityObj.lon,
+              tz: cityObj.tz,
+              customSunrise: sunrise
+            };
+            const calc = calculateFullJathagam(profile);
+            const meta = (typeof PANCHANGAM_META !== "undefined" && PANCHANGAM_META[mode])
+              ? PANCHANGAM_META[mode]
+              : { name: "அசல் 28 நம்பர் பாம்பு பஞ்சாங்கம்", shortTa: "28 நம்பர் பாம்பு வாக்கியம்", color: "#8b1c1c" };
+            const pe = calc.paambuExtras || {};
+            const ctx = {
+              dobFormatted: (typeof formatIsoToDMY === "function") ? formatIsoToDMY(dob) : dob,
+              tob12Str: (typeof format24To12Hour === "function") ? format24To12Hour(tobRaw) : tobRaw,
+              weekdayTa: pe.weekdayTa || "புதன்கிழமை",
+              tamilYearClean: pe.tamilYearTa || "விகாரி",
+              tamilMonthTa: pe.tamilMonthTa || "ஆவணி",
+              tamilDateNum: pe.tamilDateNum || 25,
+              sunRemDot: pe.sunRemDot || "15.00",
+              birthDasaLord: (calc.dasaBalance && calc.dasaBalance.lordTa) ? calc.dasaBalance.lordTa : "செவ்வாய்",
+              remY: (calc.dasaBalance && calc.dasaBalance.years !== undefined) ? calc.dasaBalance.years : 0,
+              remM: (calc.dasaBalance && calc.dasaBalance.months !== undefined) ? calc.dasaBalance.months : 0,
+              remD: (calc.dasaBalance && calc.dasaBalance.days !== undefined) ? calc.dasaBalance.days : 0
+            };
+            renderUserManualAndDegreeTab(calc, meta, ctx);
+          }
+        }
+      } catch (err) {
+        console.warn("User manual auto-render fallback:", err);
+      }
+      // Always guarantee the comprehensive User Instructions, Graha Pagai Formulas & Accuracy Proof pages are at the top
+      mjPrependManualIntroPages();
+      mjApplyMobileA4Scale();
+    }
+
+    // Also wrap renderUserManualAndDegreeTab so whenever a live chart renders, our complete intro guide pages stay included
+    (function() {
+      const origRenderManual = window.renderUserManualAndDegreeTab || (typeof renderUserManualAndDegreeTab === "function" ? renderUserManualAndDegreeTab : null);
+      if (typeof origRenderManual === "function") {
+        window._origRenderUserManualAndDegreeTab = origRenderManual;
+        window.renderUserManualAndDegreeTab = function() {
+          const r = origRenderManual.apply(this, arguments);
+          mjPrependManualIntroPages();
+          mjApplyMobileA4Scale();
+          return r;
+        };
+      }
+    })();
+
+    window.mjApplyMobileA4Scale = mjApplyMobileA4Scale;
+    window.mjEnsureUserManualReady = mjEnsureUserManualReady;
+    window.addEventListener("resize", mjApplyMobileA4Scale);
+
     window.addEventListener("DOMContentLoaded", function() {
+      mjApplyMobileA4Scale();
       mjInitTamilNaduPlaceDropdowns();
       mjInitFirebase();
     });
