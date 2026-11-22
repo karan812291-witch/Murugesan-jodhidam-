@@ -10006,6 +10006,7 @@
 
     async function mjPushPanchangamYearToCloud(yKey, entry) {
       if (!mjFirebaseReady || !mjDb || !yKey || !entry) return;
+      if (typeof IS_FRIEND_APP_MODE !== "undefined" && IS_FRIEND_APP_MODE) return;
       try {
         await mjDb.collection("panchangam_years").doc(String(yKey)).set({
           year: Number(yKey),
