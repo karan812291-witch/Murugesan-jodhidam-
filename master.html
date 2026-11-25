@@ -440,6 +440,7 @@
         <div>
           <div class="flex flex-wrap items-center gap-2">
             <h1 class="text-base sm:text-xl font-extrabold tracking-tight text-white">முருகேசன் ஜோதிடம் — முதன்மை ஆப்</h1>
+            <span id="mjTopVersionBadge" class="text-[11px] sm:text-xs font-black px-2.5 py-0.5 rounded-full bg-cyan-300 text-slate-950 border border-white/80 shadow">⚡ பதிப்பு: v26.3</span>
             <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-amber-400 text-stone-950">ஆப் உரிமையாளர்: © முருகேசன் ஜோதிடம் - ஜெ. கரண் BE, DA. 7418609681</span>
             <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-600 text-white shadow">👑 முதன்மைப் பதிப்பு (ரகசிய எண் உருவாக்கி)</span>
           </div>
@@ -605,7 +606,7 @@
           <label class="block text-xs font-extrabold text-amber-950 mb-1">பிறந்த நேரம்</label>
           <input id="inpTob" type="time" step="60" value="" onchange="calculateAndFillBook()" class="w-full px-3 py-2 rounded-xl border border-amber-300 text-sm font-bold text-slate-900" />
           <div class="mt-1 flex items-center gap-1.5">
-            <input id="inpTobManualText","inpTobAmPm" type="text" inputmode="numeric" maxlength="5" placeholder="✍️ நேரம்: 05:30" oninput="mjFormatAndSyncTob(this)" class="flex-1 min-w-0 px-2.5 py-1.5 rounded-lg border-2 border-amber-400 bg-amber-50/80 text-xs sm:text-sm font-extrabold text-amber-950 placeholder:text-slate-500 tracking-wider" />
+            <input id="inpTobManualText" type="text" inputmode="numeric" maxlength="5" placeholder="✍️ நேரம்: 05:30" oninput="mjFormatAndSyncTob(this)" class="flex-1 min-w-0 px-2.5 py-1.5 rounded-lg border-2 border-amber-400 bg-amber-50/80 text-xs sm:text-sm font-extrabold text-amber-950 placeholder:text-slate-500 tracking-wider" />
             <select id="inpTobAmPm" onchange="mjSyncManualTobWithAmPm()" class="px-2.5 py-1.5 rounded-lg border-2 border-amber-500 bg-white text-xs sm:text-sm font-black text-[#6b0f22] cursor-pointer shrink-0">
               <option value="AM">AM (காலை)</option>
               <option value="PM">PM (மாலை)</option>
@@ -653,6 +654,16 @@
         </div>
       </div>
 
+
+      
+      <div class="mt-3.5 p-3 rounded-2xl bg-gradient-to-r from-[#5b0b1a] via-[#7f1d1d] to-[#9a1b2f] border-2 border-amber-400 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-2.5">
+        <div class="text-xs font-extrabold text-amber-100 text-center sm:text-left">
+          ✨ <span class="text-amber-300">பிறந்த தேதி &amp; நேரம்</span> மட்டும் கட்டாயம் — மற்ற விவரங்கள் அனைத்தும் விருப்பத்திற்குரியவை!
+        </div>
+        <button type="button" id="btnMjCalculateNow" onclick="mjClickCalculateHoroscopeNow()" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 hover:brightness-105 active:scale-[0.98] text-stone-950 font-black text-sm sm:text-base shadow-md border-2 border-white/80 cursor-pointer whitespace-nowrap transition">
+          🔮 ஜாதகம் கணி (முடிவு காட்டு)
+        </button>
+      </div>
 
       <!-- ☁️ Firebase Firestore வாடிக்கையாளர் தரவுத்தளம் (Client Save & Phone Search) -->
       <div id="firebaseClientDbPanel" class="mt-3 p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50/90 via-amber-50/70 to-orange-50/80 border-2 border-emerald-400/80 space-y-3 shadow-xs">
@@ -4385,16 +4396,16 @@
       const dMStr    = (_byId("manDasaBalM")?.value || "").trim();
       const dDStr    = (_byId("manDasaBalD")?.value || "").trim();
 
-      let aathiVinTotal = aathiStr ? parseNazhigaiToVin(aathiStr) : activeCalc.paambuExtras.aathiVinTotal;
+      let aathiVinTotal = aathiStr ? parseNazhigaiToVin(aathiStr) : calc.paambuExtras.aathiVinTotal;
       let selVinTotal   = selStr   ? parseNazhigaiToVin(selStr)   : Math.round(((moonP.longitude % (360.0 / 27.0)) / (360.0 / 27.0)) * aathiVinTotal);
       let iruppuVinTotal = Math.max(0, aathiVinTotal - selVinTotal);
 
-      activeCalc.paambuExtras.aathiVinTotal = aathiVinTotal;
-      activeCalc.paambuExtras.selVinTotal = selVinTotal;
-      activeCalc.paambuExtras.iruppuVinTotal = iruppuVinTotal;
-      activeCalc.paambuExtras.aathiStarDot = formatVinToNazhigaiDot(aathiVinTotal);
-      activeCalc.paambuExtras.selStarDot = formatVinToNazhigaiDot(selVinTotal);
-      activeCalc.paambuExtras.iruppuStarDot = formatVinToNazhigaiDot(iruppuVinTotal);
+      calc.paambuExtras.aathiVinTotal = aathiVinTotal;
+      calc.paambuExtras.selVinTotal = selVinTotal;
+      calc.paambuExtras.iruppuVinTotal = iruppuVinTotal;
+      calc.paambuExtras.aathiStarDot = formatVinToNazhigaiDot(aathiVinTotal);
+      calc.paambuExtras.selStarDot = formatVinToNazhigaiDot(selVinTotal);
+      calc.paambuExtras.iruppuStarDot = formatVinToNazhigaiDot(iruppuVinTotal);
       calc.panchangam.remStarNazhigaiText = `இருப்பு: ${Math.floor(iruppuVinTotal / 60)} நாழிகை ${iruppuVinTotal % 60} விநாழிகை`;
 
       let balY, balM, balD, elapsedY, elapsedM, elapsedD;
@@ -4432,7 +4443,7 @@
 
       const activeDasaObj = dasaList.find(d => d.isCurrent) || dasaList[0];
       const activeBhuktiObj = (activeDasaObj && activeDasaObj.bhuktis.find(b => b.isCurrent)) || (activeDasaObj ? activeDasaObj.bhuktis[0] : null);
-      activeCalc.dasa = {
+      calc.dasa = {
         firstLord,
         elapsedText: `${firstLord.ta} தசா செல்: ${elapsedY} வருடம், ${elapsedM} மாதம், ${elapsedD} நாள்`,
         balanceText: `${firstLord.ta} தசா இருப்பு: ${balY} வருடம், ${balM} மாதம், ${balD} நாள்`,
@@ -4590,7 +4601,7 @@
       const rawDobVal = (_byId("inpDob")?.value || "").trim();
       const rawTobVal = (_byId("inpTob")?.value || "").trim();
       if (!rawDobVal || !rawTobVal) {
-        const emptyPromptHtml = `<div class="max-w-2xl mx-auto my-8 p-6 sm:p-8 rounded-3xl bg-white border-2 border-amber-300 shadow-md text-center space-y-2.5"><div class="text-4xl">📜</div><h3 class="text-base sm:text-lg font-extrabold text-[#7f1d1d]">புதிய ஜாதக விவரங்களை உள்ளிடவும்</h3><p class="text-xs sm:text-sm font-semibold text-slate-600">மேலே உள்ள படிவத்தில் <strong>ஜாதகர் பெயர்</strong>, <strong>பிறந்த தேதி</strong> மற்றும் <strong>பிறந்த நேரம்</strong> உள்ளிட்டவுடன் 26-பக்க ஜாதகப் புத்தகம் மற்றும் 100-வயது தசா புத்தி அட்டவணை தானாக உருவாகும்.</p></div>`;
+        const emptyPromptHtml = `<div class="max-w-2xl mx-auto my-8 p-6 sm:p-8 rounded-3xl bg-white border-2 border-amber-300 shadow-md text-center space-y-2.5"><div class="text-4xl">📜</div><h3 class="text-base sm:text-lg font-extrabold text-[#7f1d1d]">புதிய ஜாதக விவரங்களை உள்ளிடவும்</h3><p class="text-xs sm:text-sm font-semibold text-slate-600">மேலே உள்ள படிவத்தில் <strong>பிறந்த தேதி</strong> மற்றும் <strong>பிறந்த நேரம்</strong> மட்டும் உள்ளிட்டு <strong>🔮 ஜாதகம் கணி</strong> பொத்தானை அழுத்தியவுடன் 26-பக்க ஜாதகப் புத்தகம் மற்றும் 100-வயது தசா புத்தி அட்டவணை தானாக உருவாகும்.</p></div>`;
         const bc = _byId("puthagamBookContainer");
         if (bc) bc.innerHTML = emptyPromptHtml;
         const dc = _byId("dasa100TabContainer");
@@ -4657,7 +4668,7 @@
 
     function renderAll20Pages(calc, meta) {
       const p = calc.planets;
-      const pe = activeCalc.paambuExtras;
+      const pe = calc.paambuExtras;
       const pan = calc.panchangam;
       const [yyyy, mm, dd] = (meta.dob || "2007-07-30").split("-").map(Number);
       const dobFormatted = `${String(dd).padStart(2, "0")}-${String(mm).padStart(2, "0")}-${yyyy}`;
@@ -4683,11 +4694,11 @@
       const drekkanaRasiIdx = (p.Lagnam.rasiIdx + Math.floor(((p.Lagnam.longitude % 30) / 10)) * 4) % 12;
       const drekkanaTa = RASIS[drekkanaRasiIdx].ta;
 
-      // Parse Dasa balance & elapsed from activeCalc.dasa
-      const birthDasaLord = activeCalc.dasa.firstLord || p.Moon.starLord;
+      // Parse Dasa balance & elapsed from calc.dasa
+      const birthDasaLord = calc.dasa.firstLord || p.Moon.starLord;
       const fullDasaYears = birthDasaLord.years;
-      const balMatch = (activeCalc.dasa.balanceText || "").match(/(\d+)\s*வருடம்,\s*(\d+)\s*மாதம்,\s*(\d+)\s*நாள்/);
-      const elapMatch = (activeCalc.dasa.elapsedText || "").match(/(\d+)\s*வருடம்,\s*(\d+)\s*மாதம்,\s*(\d+)\s*நாள்/);
+      const balMatch = (calc.dasa.balanceText || "").match(/(\d+)\s*வருடம்,\s*(\d+)\s*மாதம்,\s*(\d+)\s*நாள்/);
+      const elapMatch = (calc.dasa.elapsedText || "").match(/(\d+)\s*வருடம்,\s*(\d+)\s*மாதம்,\s*(\d+)\s*நாள்/);
       const remY = balMatch ? parseInt(balMatch[1], 10) : 5;
       const remM = balMatch ? parseInt(balMatch[2], 10) : 4;
       const remD = balMatch ? parseInt(balMatch[3], 10) : 8;
@@ -4714,7 +4725,7 @@
       }).join("");
 
       // Page 13 Mahadasha Sequence rows (1..8)
-      const mList = activeCalc.dasa.dasaList || [];
+      const mList = calc.dasa.dasaList || [];
       const p13RowsHtml = mList.slice(0, 8).map((md, idx) => {
         if (idx === 0) {
           return `
@@ -5947,7 +5958,7 @@
         {
           num: 25, isData: true, isRed: false,
           html: (() => {
-            const first5 = (activeCalc.dasa.dasaList || []).slice(0, 5);
+            const first5 = (calc.dasa.dasaList || []).slice(0, 5);
             const blocksHtml = first5.map((d, dIdx) => `
               <div class="border border-slate-800 rounded-lg overflow-hidden bg-white">
                 <div class="bg-slate-800 text-amber-100 px-2 py-0.5 text-[10px] font-extrabold flex items-center justify-between">
@@ -6000,7 +6011,7 @@
         {
           num: 26, isData: true, isRed: true,
           html: (() => {
-            const next4 = (activeCalc.dasa.dasaList || []).slice(5, 9);
+            const next4 = (calc.dasa.dasaList || []).slice(5, 9);
             const blocksHtml = next4.map((d, dIdx) => `
               <div class="border border-[#8b1c1c] rounded-lg overflow-hidden bg-white">
                 <div class="bg-[#8b1c1c] text-amber-50 px-2 py-0.5 text-[10.5px] font-extrabold flex items-center justify-between">
@@ -6078,7 +6089,7 @@
       // Render Dedicated Tab 2: Full Dasa-Bhukti from Birth to 100+ Years
       const dasaTabEl = _byId("dasa100TabContainer");
       if (dasaTabEl) {
-        const allDasas = activeCalc.dasa.dasaList || [];
+        const allDasas = calc.dasa.dasaList || [];
         const lastDasa = allDasas[allDasas.length - 1];
         const maxAgeText = lastDasa ? lastDasa.endAgeTextTa : "100+ வருடம்";
         const dasaCardsHtml = allDasas.map((d, dIdx) => `
@@ -7793,9 +7804,9 @@
           let panchMatchText = "";
           let actionBtnHtml = "";
           if (item.key === "Moon") {
-            const aathiDot = (activeCalc.paambuExtras && activeCalc.paambuExtras.aathiStarDot) ? activeCalc.paambuExtras.aathiStarDot : "";
-            const selDot = (activeCalc.paambuExtras && activeCalc.paambuExtras.selStarDot) ? activeCalc.paambuExtras.selStarDot : "";
-            const iruppuDot = (activeCalc.paambuExtras && activeCalc.paambuExtras.iruppuStarDot) ? activeCalc.paambuExtras.iruppuStarDot : "";
+            const aathiDot = (calc.paambuExtras && calc.paambuExtras.aathiStarDot) ? calc.paambuExtras.aathiStarDot : "";
+            const selDot = (calc.paambuExtras && calc.paambuExtras.selStarDot) ? calc.paambuExtras.selStarDot : "";
+            const iruppuDot = (calc.paambuExtras && calc.paambuExtras.iruppuStarDot) ? calc.paambuExtras.iruppuStarDot : "";
             panchMatchText = `<span class="font-extrabold text-[#7f1d1d]">${birthMonthTa} ${String(sInfo.tamilDateNum).padStart(2, "0")}</span> • <span class="text-blue-900 font-bold">ஆதி: ${aathiDot} | செல்: ${selDot} | இருப்பு: ${iruppuDot} நா</span>`;
             actionBtnHtml = `<button type="button" onclick="jumpToPlanetPadasaramInTab('Moon', ${birthClampedYear})" class="px-2.5 py-1 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-950 border border-sky-400 font-extrabold text-[11px] cursor-pointer transition">🌙 சந்திர சாரம் பார்</button>`;
           } else if (item.isPadasaramTable && matchedEntryByPlanet[item.key] && matchedEntryByPlanet[item.key].row) {
@@ -7805,7 +7816,7 @@
             panchMatchText = `<span class="font-extrabold text-[#7f1d1d]">${mTa} ${String(mr[1]).padStart(2, "0")}</span> <span class="text-slate-500">(${engDateStr})</span> • <span class="text-blue-900 font-bold">${String(mr[2]).padStart(2, "0")} நா ${String(mr[3]).padStart(2, "0")} வி</span>`;
             actionBtnHtml = `<button type="button" onclick="jumpToPlanetPadasaramInTab('${item.key}', ${birthClampedYear})" class="px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-[#7f1d1d] border border-amber-400 font-extrabold text-[11px] cursor-pointer transition">🔍 அட்டவணையில் பார்</button>`;
           } else if (item.key === "Lagnam") {
-            const lagIruppu = (activeCalc.paambuExtras && (activeCalc.paambuExtras.lagnaIruppuDot || activeCalc.paambuExtras.lagnaRemDot)) || "";
+            const lagIruppu = (calc.paambuExtras && (calc.paambuExtras.lagnaIruppuDot || calc.paambuExtras.lagnaRemDot)) || "";
             panchMatchText = `<span class="text-slate-700 font-bold">${birthMonthTa} ${sInfo.tamilDateNum} • உதயாதி ${uInfo.formattedDot} நாழிகை (லக்ன இருப்பு: ${lagIruppu} நா)</span>`;
             actionBtnHtml = `<span class="text-[11px] font-bold text-slate-600">ராசி இருப்பு விதி</span>`;
           }
@@ -8222,7 +8233,7 @@
       const manEl = _byId("userManualTabContainer");
       if (!manEl) return;
       const p = calc.planets;
-      const pe = activeCalc.paambuExtras;
+      const pe = calc.paambuExtras;
       const order = ["Lagnam", "Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn", "Rahu", "Ketu"];
 
       const planetExplainRowsHtml = order.map((pk, idx) => {
@@ -9614,7 +9625,7 @@
       if (!container) return;
 
       const p = calc.planets;
-      const pe = activeCalc.paambuExtras || {};
+      const pe = calc.paambuExtras || {};
       const pan = calc.panchangam || {};
       const prof = calc.profile || {};
       const appEditionTa = IS_FRIEND_APP_MODE
@@ -9700,7 +9711,7 @@
       const nakSpan = 360.0 / 27.0;
       const moonTravDeg = moonLon % nakSpan;
       const moonTravPct = ((moonTravDeg / nakSpan) * 100).toFixed(2);
-      const firstLord = activeCalc.dasa.firstLord;
+      const firstLord = calc.dasa.firstLord;
       const totalDasaY = firstLord.years;
 
       const prodY = selVin * totalDasaY;
@@ -9762,7 +9773,7 @@
       }).join("");
 
       // Build Step 9 Dasa Summary Rows (first 9 Maha Dasas)
-      const dasaSummaryRows = (activeCalc.dasa.dasaList || []).slice(0, 9).map((d, idx) => `
+      const dasaSummaryRows = (calc.dasa.dasaList || []).slice(0, 9).map((d, idx) => `
         <tr class="${d.isCurrent ? 'bg-amber-50 font-extrabold' : ''}">
           <td class="text-center font-bold">${idx + 1}</td>
           <td class="font-extrabold text-slate-900">${_escHtml(d.lord.ta)} தசை ${d.isCurrent ? '⭐ (நடப்பு)' : ''}</td>
@@ -10181,7 +10192,7 @@
                 </tbody>
               </table>
               <div class="mt-2 px-2.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] font-extrabold text-emerald-950">
-                ⭐ தற்போதைய நடப்பு தசா – புத்தி: ${_escHtml(activeCalc.dasa.activeDasaText)} ${_escHtml(activeCalc.dasa.activeDasaPeriod)}
+                ⭐ தற்போதைய நடப்பு தசா – புத்தி: ${_escHtml(calc.dasa.activeDasaText)} ${_escHtml(calc.dasa.activeDasaPeriod)}
               </div>
             </div>
           </div>
@@ -10305,8 +10316,8 @@
           };
           const calc = calculateFullJathagam(profile);
           if (calc) {
-            const pe = activeCalc.paambuExtras || {};
-            const db = activeCalc.dasaBalance || {};
+            const pe = calc.paambuExtras || {};
+            const db = calc.dasaBalance || {};
             const [yyyy, mm, dd] = dob.split("-").map(Number);
             const dobFormatted = `${String(dd).padStart(2, "0")}-${String(mm).padStart(2, "0")}-${yyyy}`;
             const tob12Str = (typeof format24To12Hour === "function") ? format24To12Hour(tobRaw) : tobRaw;
@@ -11660,7 +11671,7 @@
             const meta = (typeof PANCHANGAM_META !== "undefined" && PANCHANGAM_META[mode])
               ? PANCHANGAM_META[mode]
               : { name: "அசல் 28 நம்பர் பாம்பு பஞ்சாங்கம்", shortTa: "28 நம்பர் பாம்பு வாக்கியம்", color: "#8b1c1c" };
-            const pe = activeCalc.paambuExtras || {};
+            const pe = calc.paambuExtras || {};
             const ctx = {
               dobFormatted: (typeof formatIsoToDMY === "function") ? formatIsoToDMY(dob) : dob,
               tob12Str: (typeof format24To12Hour === "function") ? format24To12Hour(tobRaw) : tobRaw,
@@ -11669,10 +11680,10 @@
               tamilMonthTa: pe.tamilMonthTa || "ஆவணி",
               tamilDateNum: pe.tamilDateNum || 25,
               sunRemDot: pe.sunRemDot || "15.00",
-              birthDasaLord: (activeCalc.dasaBalance && activeCalc.dasaBalance.lordTa) ? activeCalc.dasaBalance.lordTa : "செவ்வாய்",
-              remY: (activeCalc.dasaBalance && activeCalc.dasaBalance.years !== undefined) ? activeCalc.dasaBalance.years : 0,
-              remM: (activeCalc.dasaBalance && activeCalc.dasaBalance.months !== undefined) ? activeCalc.dasaBalance.months : 0,
-              remD: (activeCalc.dasaBalance && activeCalc.dasaBalance.days !== undefined) ? activeCalc.dasaBalance.days : 0
+              birthDasaLord: (calc.dasaBalance && calc.dasaBalance.lordTa) ? calc.dasaBalance.lordTa : "செவ்வாய்",
+              remY: (calc.dasaBalance && calc.dasaBalance.years !== undefined) ? calc.dasaBalance.years : 0,
+              remM: (calc.dasaBalance && calc.dasaBalance.months !== undefined) ? calc.dasaBalance.months : 0,
+              remD: (calc.dasaBalance && calc.dasaBalance.days !== undefined) ? calc.dasaBalance.days : 0
             };
             renderUserManualAndDegreeTab(calc, meta, ctx);
           }
@@ -13326,7 +13337,7 @@
             <div id="mjOneTap1987To2026PdfSection" class="p-4 rounded-2xl bg-white border-2 border-purple-400 shadow-md space-y-3">
               <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-200 pb-2">
                 <div>
-                  <h3 class="font-extrabold text-sm sm:text-base text-purple-950">2️⃣ 1987 – 2026 விடுபட்ட பஞ்சாங்க PDF-கள் (1-Tap பதிவேற்றம்) <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-900 border border-purple-300">v26.2</span></h3>
+                  <h3 class="font-extrabold text-sm sm:text-base text-purple-950">2️⃣ 1987 – 2026 விடுபட்ட பஞ்சாங்க PDF-கள் (1-Tap பதிவேற்றம்) <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-900 border border-purple-300">v26.3</span></h3>
                   <p class="text-[11px] font-bold text-slate-600">எந்த ஆண்டின் பக்கத்திலும் உள்ள <strong>"📤 PDF சேர்"</strong> button-ஐ ஒருமுறை தட்டினால் நேரடியாக Cloud-இல் சேமித்துவிடும் (மேலே திரும்ப ஆண்டு போட்டு சேர்க்கத் தேவையில்லை)!</p>
 
               <div class="p-3 rounded-xl bg-gradient-to-r from-purple-50 to-indigo-50 border-2 border-purple-300 flex flex-wrap items-center justify-between gap-2">
@@ -13674,6 +13685,41 @@
 
   <script id="mjManualDateTimeSyncScript">
     (function() {
+      
+      window.mjClickCalculateHoroscopeNow = function() {
+        try {
+          const dobTxt = document.getElementById("inpDobManualText");
+          if (dobTxt && dobTxt.value && typeof window.mjFormatAndSyncDob === "function") {
+            window.mjFormatAndSyncDob(dobTxt);
+          }
+          const tobTxt = document.getElementById("inpTobManualText");
+          if (tobTxt && tobTxt.value && typeof window.mjSyncManualTobWithAmPm === "function") {
+            window.mjSyncManualTobWithAmPm();
+          }
+          const dobVal = (document.getElementById("inpDob")?.value || "").trim();
+          const tobVal = (document.getElementById("inpTob")?.value || "").trim();
+          if (!dobVal || !tobVal) {
+            if (typeof showToast === "function") showToast("⚠️ பிறந்த தேதி மற்றும் பிறந்த நேரம் மட்டும் கட்டாயம் உள்ளிடவும்!", "error");
+            const focusEl = !dobVal ? (document.getElementById("inpDobManualText") || document.getElementById("inpDob")) : (document.getElementById("inpTobManualText") || document.getElementById("inpTob"));
+            if (focusEl && typeof focusEl.focus === "function") focusEl.focus();
+            return;
+          }
+          if (typeof handleDobOrModeChange === "function") {
+            handleDobOrModeChange();
+          } else if (typeof calculateAndFillBook === "function") {
+            calculateAndFillBook();
+          }
+          const bookEl = document.getElementById("puthagamBookContainer");
+          if (bookEl && typeof bookEl.scrollIntoView === "function") {
+            setTimeout(function() { bookEl.scrollIntoView({ behavior: "smooth", block: "start" }); }, 120);
+          }
+          if (typeof showToast === "function") showToast("✅ ஜாதகம் கணிக்கப்பட்டு முடிவுகள் உருவாக்கப்பட்டுவிட்டன!", "success");
+        } catch (err) {
+          console.error("mjClickCalculateHoroscopeNow error:", err);
+          if (typeof showToast === "function") showToast("❌ கணக்கீட்டுப் பிழை: " + (err && err.message ? err.message : err), "error");
+        }
+      };
+
       window.mjFormatAndSyncDob = function(el) {
         if (!el) return;
         let digits = String(el.value || "").replace(/\D/g, "").slice(0, 8);
@@ -13699,7 +13745,7 @@
       };
 
       window.mjSyncManualTobWithAmPm = function() {
-        const el = document.getElementById("inpTobManualText","inpTobAmPm");
+        const el = document.getElementById("inpTobManualText");
         const apEl = document.getElementById("inpTobAmPm");
         if (!el) return;
         const digits = String(el.value || "").replace(/\D/g, "").slice(0, 4);
@@ -13750,7 +13796,7 @@
           if (document.activeElement !== dobTxt) dobTxt.value = dmy;
         }
         const tobEl = document.getElementById("inpTob");
-        const tobTxt = document.getElementById("inpTobManualText","inpTobAmPm");
+        const tobTxt = document.getElementById("inpTobManualText");
         const apEl = document.getElementById("inpTobAmPm");
         if (tobEl && tobTxt && /^\d{2}:\d{2}/.test(tobEl.value)) {
           const p = tobEl.value.split(":").map(Number);
@@ -13829,7 +13875,7 @@
           if (!calc || !calc.planets || !calc.planets.Sun || typeof computeUdayathiNazhigai !== "function") return null;
           const srStr = (profile && activeProfile.customSunrise && /^\d{2}:\d{2}/.test(activeProfile.customSunrise))
             ? activeProfile.customSunrise
-            : ((activeCalc.paambuExtras && activeCalc.paambuExtras.sunrise24) || "06:00");
+            : ((calc.paambuExtras && calc.paambuExtras.sunrise24) || "06:00");
           const uday = computeUdayathiNazhigai(profile.dob, profile.tob, srStr);
           const udayVin = uday.totalVinazhigai;
           const sunRasiIdx = calc.planets.Sun.rasiIdx;
@@ -14015,7 +14061,7 @@
                     reasonTa = "பாரம்பரிய நோட்புக் ராசி பிரமாணம் (4.15 / 4.45 / 5.15 / 5.30) படி லக்னம் " + (diff > 0 ? "+" + diff : diff) + " பாதம் மாறி " + altInfoL.nakTa + "-" + altInfoL.pada + " (" + altInfoL.navTa + " அம்சம்) ஆக வருகிறது.";
                   }
                 }
-                const effY = (calc && activeCalc.paambuExtras && activeCalc.paambuExtras.effectiveGregYear) ? Number(activeCalc.paambuExtras.effectiveGregYear) : (profile && profile.dob ? Number(String(profile.dob).slice(0,4)) : 0);
+                const effY = (calc && calc.paambuExtras && calc.paambuExtras.effectiveGregYear) ? Number(calc.paambuExtras.effectiveGregYear) : (profile && profile.dob ? Number(String(profile.dob).slice(0,4)) : 0);
                 const isAlreadyPinnedSlow = (b.key === "Jupiter" || b.key === "Saturn" || b.key === "Rahu" || b.key === "Ketu") && effY >= 1989 && effY <= 2026;
                 if (suggestedDelta === 0 && !isAlreadyPinnedSlow && (distNext <= BORDER_DEG || distPrev <= BORDER_DEG)) {
                   suggestedDelta = (distNext <= distPrev) ? 1 : -1;
@@ -15083,7 +15129,7 @@
       };
 
       
-      // 🪐 v26.2: கிரக பாதசாரம் JSON பதிவேற்றம் & மேலாண்மை (Tier 1 Priority — 4 Apps Sync)
+      // 🪐 v26.3: கிரக பாதசாரம் JSON பதிவேற்றம் & மேலாண்மை (Tier 1 Priority — 4 Apps Sync)
       window._mjJsonSubTab = window._mjJsonSubTab || "daily";
       window._mjPadasaramListFilter = window._mjPadasaramListFilter || "all";
 
@@ -15342,7 +15388,7 @@
         box.innerHTML = `
           <div class="space-y-4 pb-8">
             <div class="p-4 rounded-2xl bg-gradient-to-r from-[#0f3d3e] via-[#115e59] to-[#0f3d3e] text-white shadow-lg">
-              <div class="text-base sm:text-lg font-black">📦 JSON தரவு சேர்க்க — தானியங்கி துல்லிய தசா இருப்பு <span class="text-[11px] px-2 py-0.5 rounded-full bg-white/20">v26.2</span></div>
+              <div class="text-base sm:text-lg font-black">📦 JSON தரவு சேர்க்க — தானியங்கி துல்லிய தசா இருப்பு <span class="text-[11px] px-2 py-0.5 rounded-full bg-white/20">v26.3</span></div>
               <div class="text-xs text-teal-100 font-bold mt-1">JSON-இல் உள்ள தேதிகளுக்குத் தானாக 0-நாள் துல்லிய அச்சுப் பஞ்சாங்க தசா இருப்பு வரும்; JSON இல்லாத தேதிகளுக்கு எப்போதும் போல ஆப் தானாகக் கணக்கிடும்!</div>
             </div>
 
