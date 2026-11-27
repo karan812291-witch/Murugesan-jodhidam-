@@ -575,7 +575,7 @@
         <div>
           <div class="flex flex-wrap items-center gap-2">
             <h1 class="text-base sm:text-xl font-extrabold tracking-tight text-white">முருகேசன் ஜோதிடம் — முதன்மை ஆப்</h1>
-            <span id="mjTopVersionBadge" class="text-[11px] sm:text-xs font-black px-2.5 py-0.5 rounded-full bg-cyan-300 text-slate-950 border border-white/80 shadow">⚡ பதிப்பு: v26.43</span>
+            <span id="mjTopVersionBadge" class="text-[11px] sm:text-xs font-black px-2.5 py-0.5 rounded-full bg-cyan-300 text-slate-950 border border-white/80 shadow">⚡ பதிப்பு: v26.45</span>
             <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-amber-400 text-stone-950">ஆப் உரிமையாளர்: © முருகேசன் ஜோதிடம் - ஜெ. கரண் BE, DA. 7418609681</span>
             <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-600 text-white shadow">👑 முதன்மைப் பதிப்பு (ரகசிய எண் உருவாக்கி)</span>
           </div>
@@ -14395,7 +14395,7 @@
         if (m) m.remove();
       };
 
-      window.mjOpenBorderlineExplainModal = function() {
+      window.mjOpenBorderlineExplainModal = function() { return;
         const existing = document.getElementById("mjBorderlineExplainModal");
         if (existing) existing.remove();
         const items = window._mjLastBorderlineItems || [];
@@ -14484,7 +14484,7 @@
               </button>
             `;
           }
-          if (grid.parentNode) grid.parentNode.insertBefore(wrap, grid);
+          /* Borderline alert pill removed per user request */
         });
       }
 
